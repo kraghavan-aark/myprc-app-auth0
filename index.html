@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>myPechanga — iOS Simulator (Auth0)</title>
+  <!-- Auth0 SDK -->
+  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0.1/auth0-spa-js.production.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #ffffff;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    /* =========================================
+       IPHONE 15 PRO FRAME
+       ========================================= */
+
+    .iphone {
+      position: relative;
+      width: 393px;
+      height: 852px;
+      /* Titanium Natural finish */
+      background: linear-gradient(160deg, #52524e 0%, #2e2e2c 30%, #1c1c1a 60%, #2a2a28 100%);
+      border-radius: 54px;
+      padding: 12px;
+      flex-shrink: 0;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.2),
+        0 0 0 2.5px #1a1a18,
+        0 60px 120px rgba(0,0,0,0.55),
+        0 20px 40px rgba(0,0,0,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.18);
+    }
+
+    /* Top shine */
+    .iphone::before {
+      content: '';
+      position: absolute;
+      top: 1px;
+      left: 18%;
+      right: 18%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(255,255,255,0.35), transparent);
+    }
+
+    /* ---- Hardware Buttons ---- */
+    .hw-btn {
+      position: absolute;
+      background: linear-gradient(to right, #3c3c3a, #2e2e2c);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.4);
+    }
+
+    /* Action button (left top) */
+    .btn-action {
+      left: -3.5px; top: 108px;
+      width: 3.5px; height: 34px;
+      border-radius: 3px 0 0 3px;
+    }
+    /* Volume up */
+    .btn-vol-up {
+      left: -3.5px; top: 162px;
+      width: 3.5px; height: 60px;
+      border-radius: 3px 0 0 3px;
+    }
+    /* Volume down */
+    .btn-vol-dn {
+      left: -3.5px; top: 236px;
+      width: 3.5px; height: 60px;
+      border-radius: 3px 0 0 3px;
+    }
+    /* Power */
+    .btn-power {
+      right: -3.5px; top: 188px;
+      width: 3.5px; height: 80px;
+      border-radius: 0 3px 3px 0;
+    }
+
+    /* USB-C */
+    .usb-c {
+      position: absolute;
+      bottom: 6px;
+      left: 50%; transform: translateX(-50%);
+      width: 52px; height: 9px;
+      background: #111;
+      border-radius: 4px;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.95);
+    }
+
+    /* Speaker dots */
+    .spk { position: absolute; bottom: 10px; display: flex; gap: 4px; align-items: center; }
+    .spk-l { right: calc(50% + 42px); }
+    .spk-r { left: calc(50% + 42px); }
+    .spk-dot { width: 4px; height: 4px; background: #282826; border-radius: 50%; box-shadow: inset 0 1px 1px rgba(0,0,0,0.8); }
+
+    /* ---- Screen ---- */
+    .screen {
+      width: 100%;
+      height: 100%;
+      border-radius: 44px;
+      overflow: hidden;
+      background: #000;
+      position: relative;
+    }
+
+    /* Dynamic Island */
+    .dynamic-island {
+      position: absolute;
+      top: 10px;
+      left: 50%; transform: translateX(-50%);
+      width: 120px; height: 34px;
+      background: #000;
+      border-radius: 18px;
+      z-index: 9999;
+      pointer-events: none;
+    }
+
+    /* Status Bar */
+    .status-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 56px;
+      z-index: 500;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 26px 10px;
+      pointer-events: none;
+      color: white;          /* default: light (for dark bg views) */
+      transition: color 0.3s;
+    }
+
+    .status-bar.dark-ui { color: #111111; } /* for white bg views */
+
+    .sb-time {
+      font-size: 15px;
+      font-weight: 700;
+      color: inherit;
+      letter-spacing: -0.3px;
+    }
+
+    .sb-icons { display: flex; align-items: center; gap: 7px; }
+
+    /* App content layer */
+    .app-layer {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    /* Home bar */
+    .home-bar {
+      position: absolute;
+      bottom: 8px;
+      left: 50%; transform: translateX(-50%);
+      width: 134px; height: 5px;
+      background: rgba(255,255,255,0.28);
+      border-radius: 3px;
+      z-index: 9999;
+      pointer-events: none;
+    }
+
+    /* =========================================
+       VIEW SYSTEM
+       ========================================= */
+
+    .view {
+      position: absolute;
+      inset: 0;
+    }
+
+    .view.v-hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* =========================================
+       LOGIN SCREEN  — white / light theme
+       ========================================= */
+
+    #vLogin {
+      /* Off-white with subtle diagonal watermark, matching real app */
+      background-color: #f5f4ef;
+      background-image: repeating-linear-gradient(
+        -45deg,
+        rgba(150,138,95,0.09) 0px,
+        rgba(150,138,95,0.09) 1px,
+        transparent 1px,
+        transparent 9px
+      );
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;
+    }
+    #vLogin::-webkit-scrollbar { display: none; }
+
+    /* ---- Branding block (above form) ---- */
+    .login-brand {
+      margin-top: 68px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 28px;
+    }
+
+    /* The Pechanga "P with feather" logo */
+    .brand-p-svg {
+      width: 100px;
+      height: auto;
+      margin-bottom: 14px;
+      mix-blend-mode: multiply;   /* white JPG bg becomes transparent on off-white screen */
+    }
+
+    /* "PECHANGA" */
+    .brand-name {
+      font-size: 27px;
+      font-weight: 800;
+      color: #C9A43E;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      line-height: 1;
+      margin-bottom: 3px;
+    }
+
+    /* "RESORT CASINO" */
+    .brand-resort {
+      font-size: 11px;
+      font-weight: 500;
+      color: #C9A43E;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    /* "myPECHANGA" — "my" thin, "PECHANGA" heavy */
+    .brand-app {
+      font-size: 26px;
+      line-height: 1;
+      color: #111111;
+    }
+    .brand-app .thin { font-weight: 400; }
+    .brand-app .bold { font-weight: 900; letter-spacing: -0.5px; }
+
+    /* ---- Descope iframe ---- */
+    .login-form {
+      width: 100%;
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .descope-frame-wrapper {
+      width: 100%;
+      margin-bottom: 18px;
+    }
+
+    /* Web component — using __override variables which take highest priority */
+    descope-wc {
+      display: block;
+      width: 100%;
+
+      /* Button — gold */
+      --descope-button-background-color__override: #C9A43E;
+      --descope-button-label-text-color__override: #2a1800;
+
+      /* Background — transparent so #vLogin diagonal lines show through */
+      --descope-container-background-color__override: transparent;
+
+      /* Input fields */
+      --descope-input-wrapper-background-color__override: #ffffff;
+      --descope-input-border-color__override: rgba(0,0,0,0.13);
+    }
+
+    /* ---- Auth0 Form Styling ---- */
+    #loginForm {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #222;
+      letter-spacing: 0.3px;
+    }
+
+    .form-group input {
+      padding: 12px 14px;
+      height: 44px;
+      border: 1.5px solid rgba(0,0,0,0.13);
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 400;
+      background: #ffffff;
+      color: #333;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #C9A43E;
+      box-shadow: 0 0 0 3px rgba(201,164,62,0.1);
+    }
+
+    .form-group input::placeholder {
+      color: rgba(0,0,0,0.35);
+    }
+
+    .btn-auth {
+      padding: 0;
+      height: 52px;
+      background: #C9A43E;
+      color: #2a1800;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+      transition: all 0.2s;
+      margin-top: 6px;
+    }
+
+    .btn-auth:active {
+      opacity: 0.9;
+      transform: scale(0.98);
+    }
+
+    .login-error {
+      color: #d32f2f;
+      font-size: 13px;
+      font-weight: 500;
+      text-align: center;
+      margin-bottom: 8px;
+      min-height: 18px;
+    }
+
+    .or-row {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 18px;
+    }
+    .or-line { flex: 1; height: 1px; background: rgba(0,0,0,0.12); }
+    .or-lbl { font-size: 12px; color: rgba(0,0,0,0.35); white-space: nowrap; }
+
+    .btn-ghost {
+      width: 100%;
+      height: 52px;
+      background: transparent;
+      border: 1.5px solid rgba(0,0,0,0.2);
+      border-radius: 14px;
+      color: #222;
+      font-size: 16px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      margin-bottom: 22px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .btn-ghost:active { background: rgba(0,0,0,0.04); }
+
+    .legal {
+      font-size: 10.5px;
+      color: rgba(0,0,0,0.3);
+      text-align: center;
+      line-height: 1.7;
+      padding: 0 6px 52px;
+    }
+    .legal a { color: #9A7820; cursor: pointer; text-decoration: none; }
+
+    /* =========================================
+       HOME / DASHBOARD
+       ========================================= */
+
+    #vHome {
+      background: #0a0010;
+      display: flex;
+      flex-direction: column;
+      padding-top: 56px; /* clear the status bar overlay */
+    }
+
+    .home-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;
+      padding-top: 14px;
+      padding-bottom: 88px;
+    }
+    .home-body::-webkit-scrollbar { display: none; }
+
+    /* Top nav bar — normal flow item, sits below status-bar offset */
+    .home-nav {
+      flex-shrink: 0;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      background: rgba(10,0,16,0.92);
+      backdrop-filter: blur(20px);
+      position: relative;
+      z-index: 100;
+    }
+
+    .home-nav-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.3px;
+    }
+
+    .home-nav-notif {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.07);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .notif-badge {
+      position: absolute;
+      top: 4px; right: 4px;
+      width: 8px; height: 8px;
+      background: #C9A43E;
+      border-radius: 50%;
+      border: 1.5px solid #0a0010;
+    }
+
+    /* Hero card */
+    .hero-card {
+      margin: 14px 16px 0;
+      background: linear-gradient(135deg, #1c0824 0%, #2e1040 60%, #1a0820 100%);
+      border-radius: 22px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(201,164,62,0.12);
+    }
+
+    .hero-card::after {
+      content: '';
+      position: absolute;
+      top: -60px; right: -40px;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(201,164,62,0.12) 0%, transparent 65%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .hero-greeting { font-size: 13px; color: rgba(255,255,255,0.42); margin-bottom: 2px; }
+    .hero-name { font-size: 24px; font-weight: 700; color: #fff; letter-spacing: -0.5px; margin-bottom: 10px; }
+
+    .tier-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(201,164,62,0.14);
+      border: 1px solid rgba(201,164,62,0.28);
+      border-radius: 20px;
+      padding: 5px 12px;
+      margin-bottom: 18px;
+    }
+    .tier-dot { width: 7px; height: 7px; background: #C9A43E; border-radius: 50%; box-shadow: 0 0 6px rgba(201,164,62,0.6); }
+    .tier-lbl { font-size: 11.5px; font-weight: 700; color: #C9A43E; letter-spacing: 1.8px; text-transform: uppercase; }
+
+    .pts-grid { display: flex; gap: 10px; }
+    .pts-tile {
+      flex: 1;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .pts-tile-lbl { font-size: 10.5px; color: rgba(255,255,255,0.38); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .pts-tile-val { font-size: 21px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+    .pts-tile-unit { font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.35); }
+
+    /* Section */
+    .sec-hd { font-size: 18px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
+    .sec-row { display: flex; align-items: center; justify-content: space-between; margin: 18px 16px 12px; }
+    .sec-see-all { font-size: 13px; color: rgba(201,164,62,0.75); cursor: pointer; }
+
+    /* Offer cards */
+    .offers-rail { display: flex; gap: 12px; padding: 0 16px 4px; overflow-x: auto; scrollbar-width: none; }
+    .offers-rail::-webkit-scrollbar { display: none; }
+
+    .offer-card {
+      flex-shrink: 0;
+      width: 192px; height: 118px;
+      border-radius: 18px;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .offer-card:active { transform: scale(0.97); }
+
+    .oc-slots  { background: linear-gradient(135deg, #1a0014, #4a0030); }
+    .oc-dining { background: linear-gradient(135deg, #0a180a, #1a3a14); }
+    .oc-hotel  { background: linear-gradient(135deg, #060e22, #0e2050); }
+
+    .oc-inner { padding: 14px 14px 12px; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+    .oc-tag { font-size: 9.5px; font-weight: 800; color: #C9A43E; text-transform: uppercase; letter-spacing: 1.5px; }
+    .oc-title { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.25; }
+    .oc-exp { font-size: 11px; color: rgba(255,255,255,0.42); }
+
+    /* Activity list */
+    .act-list { padding: 0 16px; margin-bottom: 8px; }
+    .act-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.055);
+      cursor: pointer;
+    }
+    .act-item:last-child { border-bottom: none; }
+
+    .act-ic {
+      width: 42px; height: 42px;
+      border-radius: 13px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .ai-casino { background: rgba(201,164,62,0.12); }
+    .ai-food   { background: rgba(80,200,100,0.1); }
+    .ai-hotel  { background: rgba(80,140,255,0.1); }
+    .ai-gift   { background: rgba(255,100,150,0.1); }
+
+    .act-info { flex: 1; min-width: 0; }
+    .act-name { font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+    .act-date { font-size: 11.5px; color: rgba(255,255,255,0.32); }
+    .act-pts { font-size: 14px; font-weight: 700; white-space: nowrap; }
+    .pts-plus  { color: #C9A43E; }
+    .pts-minus { color: #7ddf7d; }
+
+    /* Promo banner */
+    .promo-banner {
+      margin: 4px 16px 0;
+      background: linear-gradient(135deg, #0a1a2a, #102040);
+      border-radius: 18px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border: 1px solid rgba(80,140,255,0.18);
+      cursor: pointer;
+    }
+    .promo-icon { font-size: 28px; flex-shrink: 0; }
+    .promo-txt {}
+    .promo-title { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+    .promo-sub { font-size: 12px; color: rgba(255,255,255,0.42); }
+
+    /* Tab bar */
+    .tab-bar {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 82px;
+      background: rgba(10,0,16,0.93);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-top: 1px solid rgba(255,255,255,0.07);
+      display: flex;
+      align-items: flex-start;
+      padding-top: 10px;
+      z-index: 200;
+    }
+
+    .tab-btn {
+      flex: 1;
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      cursor: pointer;
+      padding-top: 2px;
+      background: none; border: none;
+      transition: transform 0.1s;
+    }
+    .tab-btn:active { transform: scale(0.9); }
+
+    .tab-ic { font-size: 22px; line-height: 1; }
+    .tab-lbl { font-size: 9.5px; font-weight: 500; color: rgba(255,255,255,0.3); font-family: inherit; }
+    .tab-btn.active .tab-lbl { color: #C9A43E; }
+
+    /* =========================================
+       TOAST + LOADING
+       ========================================= */
+
+    .toast {
+      position: absolute;
+      bottom: 96px;
+      left: 50%; transform: translateX(-50%) translateY(16px);
+      background: rgba(32,32,32,0.96);
+      color: #fff;
+      padding: 11px 20px;
+      border-radius: 22px;
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      z-index: 9000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s, transform 0.22s;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.09);
+      max-width: 280px;
+      text-align: center;
+      white-space: normal;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .loader {
+      position: absolute; inset: 0;
+      background: rgba(8,0,14,0.65);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 800;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .loader.show { opacity: 1; pointer-events: all; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin-ring {
+      width: 38px; height: 38px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: #C9A43E;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+
+    /* =========================================
+       VIEWPORT SCALING (fits any screen)
+       ========================================= */
+
+    @media (max-height: 900px) {
+      .iphone { transform-origin: center center; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="iphone" id="iphone">
+
+    <!-- Physical buttons -->
+    <div class="hw-btn btn-action"></div>
+    <div class="hw-btn btn-vol-up"></div>
+    <div class="hw-btn btn-vol-dn"></div>
+    <div class="hw-btn btn-power"></div>
+
+    <!-- Bottom port + speakers -->
+    <div class="usb-c"></div>
+    <div class="spk spk-l">
+      <div class="spk-dot"></div><div class="spk-dot"></div><div class="spk-dot"></div>
+    </div>
+    <div class="spk spk-r">
+      <div class="spk-dot"></div><div class="spk-dot"></div><div class="spk-dot"></div>
+    </div>
+
+    <!-- Screen -->
+    <div class="screen">
+
+      <!-- Dynamic Island -->
+      <div class="dynamic-island"></div>
+
+      <!-- Status Bar (overlays all views) — uses currentColor so dark-ui flips it -->
+      <div class="status-bar dark-ui" id="statusBar">
+        <span class="sb-time" id="sbTime">9:41</span>
+        <div class="sb-icons">
+          <!-- Signal bars -->
+          <svg width="18" height="13" viewBox="0 0 18 13" fill="currentColor">
+            <rect x="0"   y="6"   width="3" height="7"  rx="1.5"/>
+            <rect x="4.5" y="4"   width="3" height="9"  rx="1.5"/>
+            <rect x="9"   y="2"   width="3" height="11" rx="1.5"/>
+            <rect x="13.5" y="0"  width="3" height="13" rx="1.5"/>
+          </svg>
+          <!-- WiFi -->
+          <svg width="16" height="12" viewBox="0 0 24 18" fill="none">
+            <circle cx="12" cy="16" r="2" fill="currentColor"/>
+            <path d="M6.5 11 Q12 7 17.5 11" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M3 7.5 Q12 2 21 7.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.8"/>
+            <path d="M0 4 Q12 -1.5 24 4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.45"/>
+          </svg>
+          <!-- Battery -->
+          <svg width="28" height="14" viewBox="0 0 28 14" fill="none">
+            <rect x="0.75" y="0.75" width="23" height="12.5" rx="3.75" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.5"/>
+            <rect x="2.25" y="2.25" width="18" height="9.5" rx="2.5" fill="currentColor"/>
+            <path d="M25.5 5.5 V8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- App layer -->
+      <div class="app-layer">
+
+        <!-- ====================== LOGIN VIEW ====================== -->
+        <div id="vLogin" class="view">
+          <div class="login-brand">
+            <!-- Official Pechanga P-with-feather logo (embedded JPEG, white bg removed via mix-blend-mode) -->
+            <img class="brand-p-svg" alt="Pechanga logo"
+              src="data:image/jpeg;base64,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"/>
+
+
+            <div class="brand-name">PECHANGA</div>
+            <div class="brand-resort">RESORT CASINO</div>
+            <div class="brand-app"><span class="thin">my</span><span class="bold">PECHANGA</span></div>
+          </div>
+
+          <div class="login-form">
+            <!-- Auth0 login form -->
+            <div id="loginError" class="login-error"></div>
+
+            <!-- Auth0 Popup Login -->
+            <button type="button" class="btn-auth" onclick="doAuth0Popup()" style="margin-bottom: 12px;">
+              Sign in with Auth0
+            </button>
+
+            <!-- OR Divider -->
+            <div class="or-row" style="margin: 18px 0;">
+              <div class="or-line"></div>
+              <span class="or-lbl">or</span>
+              <div class="or-line"></div>
+            </div>
+
+            <!-- Local Credentials Form -->
+            <form onsubmit="doAuthLogin(event)" id="loginForm">
+              <div class="form-group">
+                <label>Email</label>
+                <input id="fEmail" type="email" placeholder="email@example.com" required>
+              </div>
+              <div class="form-group">
+                <label>Password</label>
+                <input id="fPass" type="password" placeholder="password" required>
+              </div>
+              <button type="submit" class="btn-auth">Sign In</button>
+            </form>
+
+            <!-- App-specific controls — only shown in myPechanga, not in other federated apps -->
+            <div class="or-row">
+              <div class="or-line"></div>
+              <span class="or-lbl">New to Pechanga?</span>
+              <div class="or-line"></div>
+            </div>
+
+            <button class="btn-ghost" onclick="doCreate()">Create Free Account</button>
+
+            <p class="legal">
+              By continuing you agree to our <a>Terms of Service</a> and <a>Privacy Policy</a>.<br>
+              Must be 21 years of age or older to participate.
+            </p>
+          </div>
+        </div>
+
+        <!-- ====================== HOME VIEW ====================== -->
+        <div id="vHome" class="view v-hidden">
+
+          <!-- Nav bar -->
+          <div class="home-nav">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <svg width="22" height="22" viewBox="0 0 54 54" fill="none">
+                <circle cx="27" cy="27" r="24" stroke="#C9A43E" stroke-width="1.5" stroke-dasharray="4 2.5" opacity="0.5"/>
+                <line x1="16" y1="9" x2="16" y2="45" stroke="#C9A43E" stroke-width="3" stroke-linecap="round"/>
+                <path d="M16 9 Q36 9 36 21.5 Q36 33 16 31" stroke="#C9A43E" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+              </svg>
+              <span class="home-nav-title">myPechanga</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <button class="btn-ghost" onclick="openPlayPRC()" title="Open Casino PRC" style="padding: 6px 12px; font-size: 11px; background:rgba(201,164,62,0.18);">🎰 PRC</button>
+              <div class="home-nav-notif" onclick="showToast('3 new offers available!')">
+                🔔
+                <div class="notif-badge"></div>
+              </div>
+              <div class="home-nav-notif" onclick="doLogout()" title="Sign out" style="background:rgba(255,100,80,0.18);">
+                <!-- Sign-out / door arrow icon -->
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(255,120,100,1)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scrollable body -->
+          <div class="home-body" id="homeBody">
+
+            <!-- Member hero card -->
+            <div class="hero-card">
+              <div class="hero-greeting">Welcome back,</div>
+              <div class="hero-name" id="hName">Member</div>
+              <div class="tier-pill">
+                <div class="tier-dot" id="hTierDot"></div>
+                <span class="tier-lbl" id="hTierLbl">Gold Member</span>
+              </div>
+              <div class="pts-grid">
+                <div class="pts-tile">
+                  <div class="pts-tile-lbl">Club Dollars</div>
+                  <div class="pts-tile-val" id="hRC">$12,480.00 <span class="pts-tile-unit">Club$</span></div>
+                </div>
+                <div class="pts-tile">
+                  <div class="pts-tile-lbl">EasyPlay</div>
+                  <div class="pts-tile-val" id="hTP">$3,250.00 <span class="pts-tile-unit"></span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Promo banner -->
+            <div class="promo-banner" style="margin-top:14px;" onclick="showToast('Opening Spin & Win event…')">
+              <div class="promo-icon">🎡</div>
+              <div class="promo-txt">
+                <div class="promo-title">Spin & Win — This Weekend</div>
+                <div class="promo-sub">Earn 3× points on all slot play Jun 14–15</div>
+              </div>
+            </div>
+
+            <!-- Offers section -->
+            <div class="sec-row">
+              <span class="sec-hd">Your Offers</span>
+              <span class="sec-see-all" onclick="showToast('Loading all offers…')">See All</span>
+            </div>
+            <div class="offers-rail">
+              <div class="offer-card oc-slots" onclick="showToast('Opening $25 Free Slot Play offer…')">
+                <div class="oc-inner">
+                  <div class="oc-tag">Slots</div>
+                  <div class="oc-title">$25 Free Slot Play</div>
+                  <div class="oc-exp">Expires Jun 30</div>
+                </div>
+              </div>
+              <div class="offer-card oc-dining" onclick="showToast('Opening 2-for-1 Buffet offer…')">
+                <div class="oc-inner">
+                  <div class="oc-tag">Dining</div>
+                  <div class="oc-title">2-for-1 Buffet Weekend</div>
+                  <div class="oc-exp">This weekend only</div>
+                </div>
+              </div>
+              <div class="offer-card oc-hotel" onclick="showToast('Opening Hotel 20% off offer…')">
+                <div class="oc-inner">
+                  <div class="oc-tag">Hotel</div>
+                  <div class="oc-title">20% Off Room Rate</div>
+                  <div class="oc-exp">Book by Jul 15</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="sec-row">
+              <span class="sec-hd">Recent Activity</span>
+              <span class="sec-see-all" onclick="showToast('Loading full history…')">See All</span>
+            </div>
+            <div class="act-list">
+              <div class="act-item" onclick="showToast('Tóvára Slots — session detail')">
+                <div class="act-ic ai-casino">🎰</div>
+                <div class="act-info">
+                  <div class="act-name">Slots — Tóvára</div>
+                  <div class="act-date">Today, 2:14 PM</div>
+                </div>
+                <div class="act-pts pts-plus">+$320.00 Club$</div>
+              </div>
+              <div class="act-item" onclick="showToast('Great Oak Grill — receipt detail')">
+                <div class="act-ic ai-food">🍽️</div>
+                <div class="act-info">
+                  <div class="act-name">The Great Oak Grill</div>
+                  <div class="act-date">Yesterday, 7:30 PM</div>
+                </div>
+                <div class="act-pts pts-plus">+$180.00 Club$</div>
+              </div>
+              <div class="act-item" onclick="showToast('Hotel stay — booking detail')">
+                <div class="act-ic ai-hotel">🏨</div>
+                <div class="act-info">
+                  <div class="act-name">Hotel Stay — 2 nights</div>
+                  <div class="act-date">Jun 5, 2026</div>
+                </div>
+                <div class="act-pts pts-plus">+$750.00 Club$</div>
+              </div>
+              <div class="act-item" onclick="showToast('Free Play redemption detail')">
+                <div class="act-ic ai-gift">🎁</div>
+                <div class="act-info">
+                  <div class="act-name">Redeemed Free Play</div>
+                  <div class="act-date">Jun 3, 2026</div>
+                </div>
+                <div class="act-pts pts-minus">−$500.00 Club$</div>
+              </div>
+              <div class="act-item" onclick="showToast('Blackjack session detail')">
+                <div class="act-ic ai-casino">🃏</div>
+                <div class="act-info">
+                  <div class="act-name">Blackjack — High Limit</div>
+                  <div class="act-date">Jun 1, 2026</div>
+                </div>
+                <div class="act-pts pts-plus">+$1,240.00 Club$</div>
+              </div>
+            </div>
+
+          </div><!-- /home-body -->
+
+          <!-- Tab bar -->
+          <div class="tab-bar">
+            <button class="tab-btn active" id="tabHome" onclick="switchTab('home')">
+              <span class="tab-ic">🏠</span>
+              <span class="tab-lbl" style="color:#C9A43E;">Home</span>
+            </button>
+            <button class="tab-btn" id="tabOffers" onclick="switchTab('offers')">
+              <span class="tab-ic">🎁</span>
+              <span class="tab-lbl">Offers</span>
+            </button>
+            <button class="tab-btn" id="tabRewards" onclick="switchTab('rewards')">
+              <span class="tab-ic">⭐</span>
+              <span class="tab-lbl">Rewards</span>
+            </button>
+            <button class="tab-btn" id="tabMap" onclick="switchTab('map')">
+              <span class="tab-ic">🗺️</span>
+              <span class="tab-lbl">Map</span>
+            </button>
+            <button class="tab-btn" id="tabProfile" onclick="switchTab('profile')">
+              <span class="tab-ic">👤</span>
+              <span class="tab-lbl">Profile</span>
+            </button>
+          </div>
+
+        </div><!-- /vHome -->
+
+        <!-- Loading overlay -->
+        <div class="loader" id="loader"><div class="spin-ring"></div></div>
+
+        <!-- Toast -->
+        <div class="toast" id="toastEl"></div>
+
+        <!-- Home bar -->
+        <div class="home-bar"></div>
+
+      </div><!-- /app-layer -->
+    </div><!-- /screen -->
+  </div><!-- /iphone -->
+
+  <script>
+    // ─── Auth0 Config ───────────────────────────────────────────
+    const auth0Config = {
+      domain: 'dev-hiko7dcaouvoqmpi.us.auth0.com',
+      clientId: 'ZeppqbyEtZ7uyz7Sl4JR0qXyipd48zMr'
+    };
+    let auth0Client = null;
+
+    // ─── Casino data keyed by email (mirrors users.csv) ───────────
+    const CASINO_DATA = {
+      'john.doe@mypechanga.test':  { tier: 'Gold',     rc: '12,480', tp: '3,250',  rcRaw: 12480,  tpRaw: 3250  },
+      'jane.smith@mypechanga.test':{ tier: 'Platinum', rc: '45,200', tp: '18,600', rcRaw: 45200,  tpRaw: 18600 },
+      'mike.chen@mypechanga.test': { tier: 'Diamond',  rc: '98,750', tp: '52,300', rcRaw: 98750,  tpRaw: 52300 }
+    };
+
+    const TIER_COLORS = {
+      Gold:     '#C9A43E',
+      Platinum: '#9ab4c8',
+      Diamond:  '#88ccee'
+    };
+
+    // ─── Live clock ────────────────────────────────────────────────
+    (function tick() {
+      const n = new Date();
+      document.getElementById('sbTime').textContent =
+        `${n.getHours()}:${String(n.getMinutes()).padStart(2,'0')}`;
+      setTimeout(tick, 15000);
+    })();
+
+    // ─── Auto-scale phone to viewport ─────────────────────────────
+    function scalePhone() {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const pw = 393 + 8;
+      const ph = 852 + 24;
+      const sx = (vw - 32) / pw;
+      const sy = (vh - 32) / ph;
+      const s  = Math.min(sx, sy, 1);
+      document.getElementById('iphone').style.transform = `scale(${s})`;
+    }
+    scalePhone();
+    window.addEventListener('resize', scalePhone);
+
+    // ─── Toast ────────────────────────────────────────────────────
+    let _tt;
+    function showToast(msg, dur = 2800) {
+      const el = document.getElementById('toastEl');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(_tt);
+      _tt = setTimeout(() => el.classList.remove('show'), dur);
+    }
+
+    // ─── Session store (iframe-based auth — tokens live in Descope's origin) ──
+    const SESSION_KEY = 'pechanga_session';
+
+    function saveSession(email, name, sessionJwt) {
+      // Decode exp from JWT without a library (base64 middle segment)
+      let exp = Date.now() / 1000 + 3600; // fallback: 1 hour
+      try {
+        const payload = JSON.parse(atob(sessionJwt.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+        if (payload.exp) exp = payload.exp;
+      } catch(_) {}
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ email, name, exp }));
+    }
+
+    function loadSession() {
+      try {
+        const s = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+        if (s && s.exp > Date.now() / 1000) return s;
+      } catch(_) {}
+      return null;
+    }
+
+    function clearSession() {
+      localStorage.removeItem(SESSION_KEY);
+    }
+
+    // ─── Auth0 Popup Login ───────────────────────────────────
+    async function doAuth0Popup() {
+      const overlay = document.getElementById('loader');
+      const errorEl = document.getElementById('loginError');
+      errorEl.textContent = '';
+      overlay.classList.add('show');
+
+      try {
+        auth0Client = await auth0.createAuth0Client({
+          domain: auth0Config.domain,
+          clientId: auth0Config.clientId,
+          authorizationParams: {
+            redirect_uri: window.location.origin
+          }
+        });
+
+        await auth0Client.loginWithPopup({
+          authorizationParams: {
+            prompt: 'login'
+          }
+        });
+        const user = await auth0Client.getUser();
+        const email = user?.email || user?.sub || 'user';
+        const name = user?.name || user?.nickname || email.split('@')[0];
+
+        saveSession(email, name, 'auth0_popup');
+        populateHome(email, name);
+        overlay.classList.remove('show');
+        transitionTo('vLogin', 'vHome');
+      } catch (err) {
+        overlay.classList.remove('show');
+        errorEl.textContent = 'Auth0 login failed';
+        showToast('Authentication error');
+        console.error('Auth0 popup error:', err);
+      }
+    }
+
+    // ─── Auth0 login handler ──────────────────────────────────
+    async function doAuthLogin(evt) {
+      evt.preventDefault();
+      const email = document.getElementById('fEmail').value.trim();
+      const pass = document.getElementById('fPass').value;
+      const errorEl = document.getElementById('loginError');
+      errorEl.textContent = '';
+
+      if (!email) { showToast('Enter email'); return; }
+      if (!pass)  { showToast('Enter password'); return; }
+
+      const overlay = document.getElementById('loader');
+      overlay.classList.add('show');
+
+      try {
+        console.log('Attempting login with:', email);
+        const tokenUrl = `https://${auth0Config.domain}/oauth/token`;
+        console.log('Token URL:', tokenUrl);
+
+        const resp = await fetch(tokenUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            client_id: auth0Config.clientId,
+            username: email,
+            password: pass,
+            realm: 'Username-Password-Authentication',
+            grant_type: 'http://auth0.com/oauth/grant-type/password-realm'
+          })
+        });
+
+        console.log('Response status:', resp.status);
+        const data = await resp.json();
+        console.log('Response data:', data);
+
+        overlay.classList.remove('show');
+
+        if (!resp.ok || data.error) {
+          console.error('Auth0 Error:', data);
+          errorEl.textContent = data.error_description || data.error || 'Invalid credentials';
+          showToast('Authentication failed');
+          return;
+        }
+
+        console.log('Login successful!');
+        const name = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        saveSession(email, name, data.access_token);
+        populateHome(email, name);
+        transitionTo('vLogin', 'vHome');
+      } catch (err) {
+        overlay.classList.remove('show');
+        errorEl.textContent = 'Network error';
+        showToast('Sign in failed');
+        console.error('Auth error:', err);
+      }
+    }
+
+    // ─── Initialize on load ───────────────────────────────────────
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('loginForm').onsubmit = doAuthLogin;
+      });
+    } else {
+      document.getElementById('loginForm').onsubmit = doAuthLogin;
+    }
+
+    // ─── Create account ───────────────────────────────────────────
+    function doCreate() {
+      showToast('Visit pechanga.com/rewards to create an account');
+    }
+
+    function formatCurrency(value) {
+      const num = typeof value === 'string' ? parseInt(value.replace(/,/g, '')) : parseInt(value);
+      return '$' + num.toLocaleString('en-US') + '.00';
+    }
+
+    // ─── Populate home dashboard with real user data ──────────────
+    function populateHome(email, displayName) {
+      const casino = CASINO_DATA[email.toLowerCase()] || {
+        tier: 'Member', rc: '0', tp: '0'
+      };
+      const tierColor = TIER_COLORS[casino.tier] || '#C9A43E';
+
+      document.getElementById('hName').textContent    = displayName || email.split('@')[0];
+      document.getElementById('hTierLbl').textContent = casino.tier + ' Member';
+      document.getElementById('hTierDot').style.background   = tierColor;
+      document.getElementById('hTierDot').style.boxShadow    = `0 0 6px ${tierColor}`;
+      document.getElementById('hRC').innerHTML = `${formatCurrency(casino.rc)} <span class="pts-tile-unit">Club$</span>`;
+      document.getElementById('hTP').innerHTML = `${formatCurrency(casino.tp)} <span class="pts-tile-unit"></span>`;
+    }
+
+    // ─── Sign in (Descope password auth) ─────────────────────────
+    async function doLogin() {
+      const email = document.getElementById('fEmail').value.trim();
+      const pass  = document.getElementById('fPass').value;
+
+      if (!email) { showToast('Please enter your email or Member ID'); return; }
+      if (!pass)  { showToast('Please enter your password'); return; }
+
+      const btn     = document.getElementById('btnLogin');
+      const overlay = document.getElementById('loader');
+
+      btn.textContent   = 'Signing in…';
+      btn.style.opacity = '0.6';
+      overlay.classList.add('show');
+
+      try {
+        const resp = await descopeSDK.password.signIn(email, pass);
+
+        overlay.classList.remove('show');
+        btn.textContent   = 'Sign In';
+        btn.style.opacity = '1';
+
+        if (!resp.ok) {
+          const msg = resp.error?.errorDescription || 'Invalid email or password';
+          showToast(msg);
+          return;
+        }
+
+        const user = resp.data?.user;
+        const name = user?.name || user?.givenName || email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
+
+        populateHome(email, name);
+        transitionTo('vLogin', 'vHome');
+
+      } catch (err) {
+        overlay.classList.remove('show');
+        btn.textContent   = 'Sign In';
+        btn.style.opacity = '1';
+        showToast('Sign in failed. Please check your credentials.');
+        console.error('Descope signIn error:', err);
+      }
+    }
+
+    // ─── Sign out ─────────────────────────────────────────────────
+    function doLogout() {
+      clearSession();
+      localStorage.clear();
+      sessionStorage.clear();
+      auth0Client = null;
+      transitionTo('vHome', 'vLogin');
+      setTimeout(() => { location.reload(); }, 300);
+    }
+
+    // ─── Open Play PRC with token ──────────────────────────────────
+    async function openPlayPRC() {
+      try {
+        if (!auth0Client || !(await auth0Client.isAuthenticated())) {
+          showToast('No active session. Please sign in first.');
+          return;
+        }
+        const token = await auth0Client.getTokenSilently();
+        if (!token) {
+          showToast('Token not found. Please sign in again.');
+          return;
+        }
+        const playPrcUrl = `https://kraghavan-aark.github.io/playprc/?token=${encodeURIComponent(token)}&provider=auth0`;
+        window.open(playPrcUrl, '_blank');
+      } catch (err) {
+        console.error('Error opening Play PRC:', err);
+        showToast('Error opening Play PRC. Check console.');
+      }
+    }
+
+    // ─── Check existing session on load ───────────────────────────
+    (function checkSession() {
+      const s = loadSession();
+      if (!s) return;
+      populateHome(s.email, s.name);
+      document.getElementById('vLogin').classList.add('v-hidden');
+      document.getElementById('vHome').classList.remove('v-hidden');
+      document.getElementById('statusBar').classList.remove('dark-ui');
+      document.querySelector('.home-bar').style.background = '';
+    })();
+
+    // ─── View transitions ─────────────────────────────────────────
+    function transitionTo(fromId, toId) {
+      const from = document.getElementById(fromId);
+      const to   = document.getElementById(toId);
+      const sb   = document.getElementById('statusBar');
+
+      from.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      from.style.opacity    = '0';
+      from.style.transform  = 'translateX(-30px)';
+
+      setTimeout(() => {
+        from.classList.add('v-hidden');
+        from.style.transform = '';
+        from.style.opacity   = '';
+
+        if (toId === 'vLogin') sb.classList.add('dark-ui');
+        else sb.classList.remove('dark-ui');
+
+        const hb = document.querySelector('.home-bar');
+        if (toId === 'vLogin') hb.style.background = 'rgba(0,0,0,0.18)';
+        else hb.style.background = '';
+
+        to.classList.remove('v-hidden');
+        to.style.opacity    = '0';
+        to.style.transform  = 'translateX(30px)';
+        to.style.transition = 'none';
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            to.style.transition = 'opacity 0.32s ease, transform 0.32s ease';
+            to.style.opacity    = '1';
+            to.style.transform  = '';
+          });
+        });
+      }, 300);
+    }
+
+    // ─── Tab switching ────────────────────────────────────────────
+    function switchTab(name) {
+      ['home','offers','rewards','map','profile'].forEach(t => {
+        const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+        btn.classList.remove('active');
+        btn.querySelector('.tab-lbl').style.color = '';
+      });
+      const active = document.getElementById('tab' + name.charAt(0).toUpperCase() + name.slice(1));
+      active.classList.add('active');
+      active.querySelector('.tab-lbl').style.color = '#C9A43E';
+      if (name !== 'home') {
+        const labels = { offers: 'Offers & Promotions', rewards: 'Redeem Rewards', map: 'Casino Floor Map', profile: 'My Profile' };
+        showToast(`${labels[name]} — Coming soon`);
+      }
+    }
+  </script>
+</body>
+</html>
